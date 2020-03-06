@@ -1,0 +1,9 @@
+sudo: required
+language: java
+services:
+  - docker
+jdk:
+  - openjdk11
+script:
+  - chmod +x gradlew
+  - ./gradlew build
