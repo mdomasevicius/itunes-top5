@@ -20,5 +20,7 @@ dependencies {
         'org.liquibase:liquibase-core:3.8.7',
 
         'org.postgresql:postgresql:42.2.10',
+
+        'com.squareup.okhttp3:okhttp:4.4.0',
     )
 }
