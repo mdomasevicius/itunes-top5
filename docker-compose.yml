@@ -1,6 +1,16 @@
 version: '2.2'
 
 services:
+  app:
+    build: app/.
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/itunes
+    ports:
+      - 7001:7001
+    mem_limit: 256m
+    links:
+      - dev
+
   db:
     image: postgres:alpine
     ports:
