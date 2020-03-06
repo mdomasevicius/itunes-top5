@@ -32,7 +32,9 @@ test.dependsOn(':app:build')
 
 test {
     maxParallelForks = 1
-    logging.captureStandardOutput LogLevel.INFO
+    testLogging {
+        events('passed', 'skipped', 'failed')
+    }
 }
 
 dockerCompose {
