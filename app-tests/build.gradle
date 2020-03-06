@@ -1,6 +1,16 @@
-plugins {
-    id 'groovy'
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "gradle.plugin.com.avast.gradle:gradle-docker-compose-plugin:0.10.9"
+    }
 }
+
+apply plugin: 'groovy'
+apply plugin: 'com.avast.gradle.docker-compose'
 
 sourceCompatibility = 11
 targetCompatibility = 11
@@ -15,6 +25,18 @@ sourceSets {
         java.srcDirs = []
         groovy.srcDirs = [ 'src/test/java' ]
     }
+}
+
+dockerCompose.isRequiredBy(test)
+test.dependsOn(':app:build')
+
+test {
+    maxParallelForks = 1
+    logging.captureStandardOutput LogLevel.INFO
+}
+
+dockerCompose {
+    useComposeFiles = ['../docker-compose.yml']
 }
 
 repositories {
