@@ -1,20 +1,21 @@
 package mdomasevicius.itunestop5.componenttests
 
 import groovy.json.JsonSlurper
-import groovy.transform.CompileStatic
-import okhttp3.ConnectionPool
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import okhttp3.*
 
+import static groovy.json.JsonOutput.toJson
 import static java.util.concurrent.TimeUnit.MINUTES
 import static java.util.concurrent.TimeUnit.SECONDS
 
 class HttpClient {
 
     private static final String uriString = "http://localhost:7001"
+    private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    private final Map<String, String> defaultHeaders
     private final OkHttpClient httpClient
 
-    HttpClient() {
+    HttpClient(Map<String, String> defaultHeaders = [:]) {
+        this.defaultHeaders = defaultHeaders
         this.httpClient  = new OkHttpClient.Builder()
             .connectTimeout(5, SECONDS)
             .retryOnConnectionFailure(true)
@@ -26,13 +27,25 @@ class HttpClient {
 
     FluentResponse get(String path, Map<String, String> queryMap = [:]) {
         def httpResponse = httpClient.newCall(getRequest(path, queryMap)).execute()
-        def body = new JsonSlurper().parse(httpResponse.body().bytes())
+        def bytes = httpResponse.body().bytes()
+        return new FluentResponse(httpResponse.code(), bytes ? new JsonSlurper().parse(bytes) : null)
+    }
+
+    FluentResponse post(String path, Map payload) {
+        def httpResponse = httpClient.newCall(postRequest(path, payload)).execute()
+        def body = httpResponse.body().contentLength() ? new JsonSlurper().parse(httpResponse.body().bytes()) : null
         return new FluentResponse(httpResponse.code(), body)
     }
 
-    private static Request getRequest(String path, Map<String, String> query = [:]) {
-        return requestBuilder(path, query)
+    private Request getRequest(String path, Map<String, String> query = [:]) {
+        return applyDefaultHeaders(requestBuilder(path, query))
             .get()
+            .build()
+    }
+
+    private Request postRequest(String path, Map payload) {
+        return applyDefaultHeaders(requestBuilder(path))
+            .post(RequestBody.create(toJson(payload), JSON))
             .build()
     }
 
@@ -41,12 +54,16 @@ class HttpClient {
         return new Request.Builder().url("${uriString}${path}${queryString}")
     }
 
+    private Request.Builder applyDefaultHeaders(Request.Builder requestContinuation) {
+        defaultHeaders.each { key, value -> requestContinuation.header(key, value) }
+        return requestContinuation
+    }
+
     private static String queryMap2String(Map<String, String> queryMap) {
         return queryMap.collect { "${it.key}=${it.value}" }.join('&')
     }
 }
 
-@CompileStatic
 class FluentResponse {
     final int status
     final Object body

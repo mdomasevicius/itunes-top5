@@ -13,9 +13,9 @@ class User {
     @Delegate
     ArtistActions artistActions
 
-    static User user() {
+    static User newUser() {
         def userId = current().nextLong(MAX_VALUE)
-        def http = new HttpClient()
+        def http = new HttpClient(['User-Id': userId as String])
         return new User(
             userId: userId,
             artistActions: new ArtistActions(http),

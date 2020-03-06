@@ -14,4 +14,12 @@ class ArtistActions {
     FluentResponse searchArtists(String term) {
         return http.get('/api/artists', [term: term])
     }
+
+    FluentResponse saveArtistToFavourites(Map payload) {
+        http.post('/api/artists/favourites', payload)
+    }
+
+    FluentResponse listFavouriteArtists() {
+        http.get('/api/artists/favourites')
+    }
 }

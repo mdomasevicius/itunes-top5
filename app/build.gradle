@@ -14,13 +14,17 @@ repositories {
 }
 
 dependencies {
+    def springBootVersion = '2.2.5.RELEASE'
+
     implementation(
-        'org.springframework.boot:spring-boot-starter-web:2.2.5.RELEASE',
-        'org.springframework.boot:spring-boot-starter-jdbc:2.2.5.RELEASE',
+        "org.springframework.boot:spring-boot-starter-web:$springBootVersion",
 
         'org.liquibase:liquibase-core:3.8.7',
-
         'org.postgresql:postgresql:42.2.10',
+        "org.springframework.boot:spring-boot-starter-jdbc:$springBootVersion",
+
+        'org.jooq:jooq:3.13.1',
+        "org.springframework.boot:spring-boot-starter-jooq:$springBootVersion",
 
         'com.squareup.okhttp3:okhttp:4.4.0',
     )

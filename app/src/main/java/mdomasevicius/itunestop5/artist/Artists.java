@@ -1,34 +1,63 @@
 package mdomasevicius.itunestop5.artist;
 
-import mdomasevicius.itunestop5.common.JSON;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import mdomasevicius.itunestop5.itunes.ITunesApi;
+import mdomasevicius.itunestop5.itunes.ITunesArtistSearchResponse;
+import org.jooq.DSLContext;
+import org.jooq.Field;
+import org.jooq.Record;
+import org.jooq.Table;
+import org.jooq.impl.DSL;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import static mdomasevicius.itunestop5.artist.Artist.artists;
 
 @Component
 class Artists {
 
-    private final OkHttpClient httpClient;
+    private final DSLContext db;
+    private final ITunesApi iTunesApi;
 
-    Artists(OkHttpClient httpClient) {
-        this.httpClient = httpClient;
+    Artists(DSLContext db, ITunesApi iTunesApi) {
+        this.db = db;
+        this.iTunesApi = iTunesApi;
     }
 
     public List<Artist> search(String term) {
-        try {
-            var response = httpClient.newCall(searchAllArtistsRequest(term)).execute();
-            return JSON.MAPPER.readValue(response.body().bytes(), ITunesArtistSearchResponse.class).artists();
-        } catch (IOException e) {
-            throw new RuntimeException(e); // nothing to do
-        }
+        ITunesArtistSearchResponse response = iTunesApi.searchAllArtists(term);
+        return artists(response.results);
     }
 
-    private static Request searchAllArtistsRequest(String term) {
-        return new Request.Builder()
-            .url("https://itunes.apple.com/search?entity=allArtist&term=" + term)
-            .build();
+    @Transactional
+    public void saveToFavourites(Long userId, Set<Long> artistIds) {
+        artistIds.forEach(artistId ->
+            db.insertInto(ArtistsTable._USER_FAVOURITE_ARTISTS)
+                .set(ArtistsTable.USER_ID, userId)
+                .set(ArtistsTable.ARTIST_ID, artistId)
+                .onConflict(ArtistsTable.USER_ID, ArtistsTable.ARTIST_ID)
+                .doNothing()
+                .execute()
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public List<Artist> listFavourites(Long userId) {
+        var artistIds = db.selectDistinct(ArtistsTable.ARTIST_ID)
+            .from(ArtistsTable._USER_FAVOURITE_ARTISTS)
+            .where(ArtistsTable.USER_ID.eq(userId))
+            .fetchInto(Long.class);
+
+        ITunesArtistSearchResponse response = iTunesApi.lookupArtists(new HashSet<>(artistIds));
+        return artists(response.results);
+    }
+
+    private static class ArtistsTable {
+        public final static Table<Record> _USER_FAVOURITE_ARTISTS = DSL.table("user_favourite_artists");
+        public final static Field<Long> USER_ID = DSL.field("user_id", Long.class);
+        public final static Field<Long> ARTIST_ID = DSL.field("artist_id", Long.class);
     }
 }
