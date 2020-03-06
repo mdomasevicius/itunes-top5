@@ -1,0 +1,19 @@
+plugins {
+    id 'java'
+}
+
+group 'mdomasevicius'
+version '1.0'
+
+sourceCompatibility = 11
+targetCompatibility = 11
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation(
+        'org.springframework.boot:spring-boot-starter-web:2.2.5.RELEASE',
+    )
+}
