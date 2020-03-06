@@ -1,0 +1,10 @@
+server:
+  port: 7001
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5401/itunes
+    username: itunes_user
+    password: itunes_pass
+  liquibase:
+    change-log: classpath:db/changelog-schema.xml

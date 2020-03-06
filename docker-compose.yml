@@ -1,0 +1,19 @@
+version: '2.2'
+
+services:
+  db:
+    image: postgres:alpine
+    ports:
+      - "5401:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: itunes
+    volumes:
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+
+  dev:
+    image: tianon/true
+    restart: "no"
+    depends_on:
+      - db

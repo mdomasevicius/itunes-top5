@@ -15,5 +15,10 @@ repositories {
 dependencies {
     implementation(
         'org.springframework.boot:spring-boot-starter-web:2.2.5.RELEASE',
+        'org.springframework.boot:spring-boot-starter-jdbc:2.2.5.RELEASE',
+
+        'org.liquibase:liquibase-core:3.8.7',
+
+        'org.postgresql:postgresql:42.2.10',
     )
 }
