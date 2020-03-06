@@ -1,3 +1,4 @@
 rootProject.name = 'itunes-top5'
 
 include 'app'
+include 'app-tests'
