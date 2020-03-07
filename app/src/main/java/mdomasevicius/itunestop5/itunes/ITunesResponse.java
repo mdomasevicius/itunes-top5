@@ -17,7 +17,7 @@ public class ITunesResponse {
 
     public static class ITunesResult {
         public WrapperType wrapperType;
-        private Map<String, String> properties = new HashMap<>();
+        public Map<String, String> properties = new HashMap<>();
 
         @JsonAnySetter
         public void setProperty(String key, String value) {

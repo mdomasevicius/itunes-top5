@@ -1,7 +1,7 @@
 package mdomasevicius.itunestop5.itunes;
 
 import mdomasevicius.itunestop5.common.GenericBadRequestException;
-import mdomasevicius.itunestop5.common.JSON;
+import mdomasevicius.itunestop5.common.Conversions;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -26,7 +26,7 @@ public class ITunesApi {
     public ITunesResponse searchAllArtists(String term) {
         try {
             var body = executeCall(iTunesSearchRequest(term)).body();
-            return JSON.MAPPER.readValue(body.bytes(), ITunesResponse.class);
+            return Conversions.readValue(body.bytes(), ITunesResponse.class);
         } catch (IOException ex) {
             throw new RuntimeException(ex); // nothing to do
         }
@@ -35,7 +35,7 @@ public class ITunesApi {
     public ITunesResponse lookupArtists(Set<Long> artistIds) {
         try {
             var response = executeCall(iTunesLookupRequest(new HashSet<>(artistIds)));
-            return JSON.MAPPER.readValue(response.body().bytes(), ITunesResponse.class);
+            return Conversions.readValue(response.body().bytes(), ITunesResponse.class);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }

@@ -16,4 +16,18 @@
         <addUniqueConstraint tableName="user_favourite_artists" columnNames="user_id, artist_id"/>
     </changeSet>
 
+    <changeSet id="2" author="mdomasevicius@gmail.com">
+        <createTable tableName="itunes_artists_by_searched_term">
+            <column name="term" type="text">
+                <constraints nullable="false" unique="true" primaryKey="true"/>
+            </column>
+            <column name="updated_on" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="itunes_artists" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
