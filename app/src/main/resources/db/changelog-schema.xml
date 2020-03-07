@@ -44,4 +44,15 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="4" author="mdomasevicius@gmail.com">
+        <createTable tableName="artists">
+            <column name="id" type="bigint">
+                <constraints nullable="false" unique="true" primaryKey="true"/>
+            </column>
+            <column name="name" type="text">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

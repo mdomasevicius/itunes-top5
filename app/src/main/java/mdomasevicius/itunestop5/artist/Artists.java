@@ -25,6 +25,8 @@ import static mdomasevicius.itunestop5.itunes.ITunesResponse.ITunesResult;
 @Component
 class Artists {
 
+    private static final TypeReference<List<ITunesResult>> LIST_OF_ITUNES_RESULT = new TypeReference<>() {};
+
     private final DSLContext db;
     private final ITunesApi iTunesApi;
 
@@ -35,10 +37,10 @@ class Artists {
 
     public List<Artist> search(String term) {
         List<ITunesResult> results = searchArtistInDb(term)
-            .map(json -> readValue(json.data(), new TypeReference<List<ITunesResult>>() { }))
+            .map(json -> readValue(json.data(), LIST_OF_ITUNES_RESULT))
             .orElseGet(() -> remoteSearchArtistsAndCache(term));
 
-        return artists(results);
+        return storeArtists(artists(results));
     }
 
     private List<ITunesResult> remoteSearchArtistsAndCache(String term) {
@@ -74,10 +76,10 @@ class Artists {
     @Transactional
     public void saveToFavourites(Long userId, Set<Long> artistIds) {
         artistIds.forEach(artistId ->
-            db.insertInto(ArtistsTable._USER_FAVOURITE_ARTISTS)
-                .set(ArtistsTable.USER_ID, userId)
-                .set(ArtistsTable.ARTIST_ID, artistId)
-                .onConflict(ArtistsTable.USER_ID, ArtistsTable.ARTIST_ID)
+            db.insertInto(FavouredArtistsTable._USER_FAVOURITE_ARTISTS)
+                .set(FavouredArtistsTable.USER_ID, userId)
+                .set(FavouredArtistsTable.ARTIST_ID, artistId)
+                .onConflict(FavouredArtistsTable.USER_ID, FavouredArtistsTable.ARTIST_ID)
                 .doNothing()
                 .execute()
         );
@@ -85,19 +87,31 @@ class Artists {
 
     @Transactional(readOnly = true)
     public List<Artist> listFavourites(Long userId) {
-        var artistIds = db.selectDistinct(ArtistsTable.ARTIST_ID)
-            .from(ArtistsTable._USER_FAVOURITE_ARTISTS)
-            .where(ArtistsTable.USER_ID.eq(userId))
+        var favouredIds = db.selectDistinct(FavouredArtistsTable.ARTIST_ID)
+            .from(FavouredArtistsTable._USER_FAVOURITE_ARTISTS)
+            .where(FavouredArtistsTable.USER_ID.eq(userId))
             .fetchInto(Long.class);
 
-        ITunesResponse response = iTunesApi.lookupArtists(new HashSet<>(artistIds));
-        return artists(response.results);
+        List<Artist> fetchedFromDb = fetchArtistsFromDb(favouredIds);
+
+        // For simplicity I will use simple check to see if DB contains all artist info
+        if (favouredIds.size() == fetchedFromDb.size()) {
+            return fetchedFromDb;
+        }
+
+        ITunesResponse response = iTunesApi.lookupArtists(new HashSet<>(favouredIds));
+        return storeArtists(artists(response.results));
+    }
+
+    private List<Artist> fetchArtistsFromDb(List<Long> favouredIds) {
+        return db.selectFrom(ArtistsTable._ARTISTS)
+            .where(ArtistsTable.ID.in(favouredIds))
+            .fetchInto(Artist.class);
     }
 
     public List<Album> top5Albums(long artistId) {
         List<ITunesResult> results = searchAlbumsInDb(artistId)
-            .map(json -> readValue(json.data(), new TypeReference<List<ITunesResult>>() {
-            }))
+            .map(json -> readValue(json.data(), LIST_OF_ITUNES_RESULT))
             .orElseGet(() -> lookupTop5AlbumsAndCache(artistId));
 
         return albums(results);
@@ -132,7 +146,22 @@ class Artists {
             .fetchOptionalInto(JSONB.class);
     }
 
-    private static class ArtistsTable {
+    private List<Artist> storeArtists(List<Artist> artists) {
+        db.transaction(tx ->
+            artists.forEach(artist ->
+                tx.dsl().insertInto(ArtistsTable._ARTISTS)
+                    .set(ArtistsTable.ID, artist.id)
+                    .set(ArtistsTable.NAME, artist.name)
+                    .onConflict(ArtistsTable.ID)
+                    .doNothing()
+                    .execute()
+            )
+        );
+
+        return artists;
+    }
+
+    private static class FavouredArtistsTable {
         public final static Table<Record> _USER_FAVOURITE_ARTISTS = DSL.table("user_favourite_artists");
         public final static Field<Long> USER_ID = DSL.field("user_id", Long.class);
         public final static Field<Long> ARTIST_ID = DSL.field("artist_id", Long.class);
@@ -150,5 +179,11 @@ class Artists {
         public final static Field<Long> ARTIST_ID = DSL.field("artist_id", Long.class);
         public final static Field<Instant> UPDATED_ON = DSL.field("updated_on", Instant.class);
         public final static Field<JSONB> ITUNES_TOP_5_ALBUMS = DSL.field("itunes_top_5_albums", JSONB.class);
+    }
+
+    private static class ArtistsTable {
+        public final static Table<Record> _ARTISTS = DSL.table("artists");
+        public final static Field<Long> ID = DSL.field("id", Long.class);
+        public final static Field<String> NAME = DSL.field("name", String.class);
     }
 }

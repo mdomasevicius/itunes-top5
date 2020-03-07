@@ -44,10 +44,10 @@ class ArtistsController {
         public Set<Long> ids;
     }
 
+    // General consensus is unique resource per controller, but since this is
+    // a small app - I don't want to create an extra class just for it
     @GetMapping("/{id}/top5albums")
-    List<Album> top5Albums(
-        @PathVariable Long id
-    ) {
+    List<Album> top5Albums(@PathVariable Long id) {
         return artists.top5Albums(id);
     }
 }
