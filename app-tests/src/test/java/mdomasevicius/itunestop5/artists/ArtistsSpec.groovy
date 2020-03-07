@@ -41,6 +41,23 @@ class ArtistsSpec extends Specification {
             !newUser().listFavouriteArtists().body
     }
 
+    def 'list top 5 artist albums'() {
+        expect:
+            def artistId = findArtists('beach boys').first().id as long
+            with(user.listTop5Albums(artistId)) { response ->
+                response.status == 200
+
+                response.body.size() <= 5
+                response.body.every {
+                    it.country
+                    it.artistUrl
+                    it.artworkUrl
+                    it.releaseDate
+                    it.genre
+                }
+            }
+    }
+
     List<Map> findArtists(String term) {
         def response = user.searchArtists(term)
         assert response.status == 200 && response.body

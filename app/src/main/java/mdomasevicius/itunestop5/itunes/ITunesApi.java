@@ -34,7 +34,8 @@ public class ITunesApi {
 
     public ITunesResponse lookupArtists(Set<Long> artistIds) {
         try {
-            var response = executeCall(iTunesLookupRequest(new HashSet<>(artistIds)));
+            var idsString = artistIds.stream().map(String::valueOf).collect(joining(","));
+            var response = executeCall(iTunesLookupRequest("?id=" + idsString));
             return Conversions.readValue(response.body().bytes(), ITunesResponse.class);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
@@ -47,12 +48,7 @@ public class ITunesApi {
             .build();
     }
 
-    private static Request iTunesLookupRequest(Set<Long> artistIds) {
-        var idsString = artistIds.stream().map(String::valueOf).collect(joining(","));
-        return new Request.Builder()
-            .url(BASE_URL + "/lookup?id=" + idsString)
-            .build();
-    }
+
 
     private Response executeCall(Request request) throws IOException {
         var response = httpClient.newCall(request).execute();
@@ -60,5 +56,20 @@ public class ITunesApi {
             throw new GenericBadRequestException("iTunes API returned: " + response.code());
         }
         return response;
+    }
+
+    public ITunesResponse top5Albums(Long artistId) {
+        try {
+            var response = executeCall(iTunesLookupRequest("?id=" + artistId + "&entity=album&limit=5"));
+            return Conversions.readValue(response.body().bytes(), ITunesResponse.class);
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    private static Request iTunesLookupRequest(String queryString) {
+        return new Request.Builder()
+            .url(BASE_URL + "/lookup" + queryString)
+            .build();
     }
 }

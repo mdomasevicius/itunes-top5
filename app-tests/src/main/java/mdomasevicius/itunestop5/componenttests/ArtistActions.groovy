@@ -16,10 +16,14 @@ class ArtistActions {
     }
 
     FluentResponse saveArtistToFavourites(Map payload) {
-        http.post('/api/artists/favourites', payload)
+        return http.post('/api/artists/favourites', payload)
     }
 
     FluentResponse listFavouriteArtists() {
-        http.get('/api/artists/favourites')
+        return http.get('/api/artists/favourites')
+    }
+
+    FluentResponse listTop5Albums(Long artistId) {
+        return http.get("/api/artists/$artistId/top5albums")
     }
 }

@@ -93,6 +93,11 @@ class Artists {
         return artists(response.results);
     }
 
+    public List<Album> top5Albums(Long artistId) {
+        ITunesResponse response = iTunesApi.top5Albums(artistId);
+        return Album.albums(response.results);
+    }
+
     private static class ArtistsTable {
         public final static Table<Record> _USER_FAVOURITE_ARTISTS = DSL.table("user_favourite_artists");
         public final static Field<Long> USER_ID = DSL.field("user_id", Long.class);

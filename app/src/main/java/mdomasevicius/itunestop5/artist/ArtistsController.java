@@ -43,4 +43,11 @@ class ArtistsController {
         @NotEmpty
         public Set<Long> ids;
     }
+
+    @GetMapping("/{id}/top5albums")
+    List<Album> top5Albums(
+        @PathVariable Long id
+    ) {
+        return artists.top5Albums(id);
+    }
 }
