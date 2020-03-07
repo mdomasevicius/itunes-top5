@@ -1,7 +1,7 @@
 package mdomasevicius.itunestop5.itunes;
 
 import mdomasevicius.itunestop5.common.Conversions;
-import mdomasevicius.itunestop5.common.GenericBadRequestException;
+import mdomasevicius.itunestop5.common.ITunesApiNot200Exception;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -49,8 +49,8 @@ public class ITunesApi {
 
     private Response executeCall(Request request) throws IOException {
         var response = httpClient.newCall(request).execute();
-        if (response.code() > 299 || response.code() < 200) {
-            throw new GenericBadRequestException("iTunes API returned: " + response.code());
+        if (response.code() != 200) {
+            throw new ITunesApiNot200Exception("iTunes API returned: " + response.code());
         }
         return response;
     }
