@@ -1,14 +1,13 @@
 package mdomasevicius.itunestop5.itunes;
 
-import mdomasevicius.itunestop5.common.GenericBadRequestException;
 import mdomasevicius.itunestop5.common.Conversions;
+import mdomasevicius.itunestop5.common.GenericBadRequestException;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 import static java.util.stream.Collectors.joining;
@@ -47,8 +46,6 @@ public class ITunesApi {
             .url(BASE_URL + "/search?entity=allArtist&term=" + term)
             .build();
     }
-
-
 
     private Response executeCall(Request request) throws IOException {
         var response = httpClient.newCall(request).execute();

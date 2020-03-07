@@ -1,7 +1,6 @@
 package mdomasevicius.itunestop5.artist;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import mdomasevicius.itunestop5.common.Conversions;
 import mdomasevicius.itunestop5.itunes.ITunesApi;
 import mdomasevicius.itunestop5.itunes.ITunesResponse;
 import org.jooq.*;
@@ -17,7 +16,10 @@ import java.util.Set;
 
 import static java.time.Duration.of;
 import static java.time.temporal.ChronoUnit.DAYS;
+import static mdomasevicius.itunestop5.artist.Album.albums;
 import static mdomasevicius.itunestop5.artist.Artist.artists;
+import static mdomasevicius.itunestop5.common.Conversions.readValue;
+import static mdomasevicius.itunestop5.common.Conversions.writeValue;
 import static mdomasevicius.itunestop5.itunes.ITunesResponse.ITunesResult;
 
 @Component
@@ -32,9 +34,8 @@ class Artists {
     }
 
     public List<Artist> search(String term) {
-        List<ITunesResult> results = findInDb(term)
-            .map(json -> Conversions.readValue(json.data(), new TypeReference<List<ITunesResult>>() {
-            }))
+        List<ITunesResult> results = searchArtistInDb(term)
+            .map(json -> readValue(json.data(), new TypeReference<List<ITunesResult>>() { }))
             .orElseGet(() -> remoteSearchArtistsAndCache(term));
 
         return artists(results);
@@ -48,18 +49,18 @@ class Artists {
                 .insertInto(ITunesArtistsBySearchedTermTable._ITUNES_ARTISTS_BY_SEARCHED_TERM)
                 .set(ITunesArtistsBySearchedTermTable.TERM, term)
                 .set(ITunesArtistsBySearchedTermTable.UPDATED_ON, Instant.now())
-                .set(ITunesArtistsBySearchedTermTable.ARTISTS, JSONB.valueOf(Conversions.writeValue(results)))
+                .set(ITunesArtistsBySearchedTermTable.ARTISTS, JSONB.valueOf(writeValue(results)))
                 .onConflict(ITunesArtistsBySearchedTermTable.TERM)
                 .doUpdate()
                 .set(ITunesArtistsBySearchedTermTable.UPDATED_ON, Instant.now())
-                .set(ITunesArtistsBySearchedTermTable.ARTISTS, JSONB.valueOf(Conversions.writeValue(results)))
+                .set(ITunesArtistsBySearchedTermTable.ARTISTS, JSONB.valueOf(writeValue(results)))
                 .execute()
         );
 
         return results;
     }
 
-    private Optional<JSONB> findInDb(String term) {
+    private Optional<JSONB> searchArtistInDb(String term) {
         return db.select(ITunesArtistsBySearchedTermTable.ARTISTS)
             .from(ITunesArtistsBySearchedTermTable._ITUNES_ARTISTS_BY_SEARCHED_TERM)
             .where(
@@ -93,9 +94,42 @@ class Artists {
         return artists(response.results);
     }
 
-    public List<Album> top5Albums(Long artistId) {
+    public List<Album> top5Albums(long artistId) {
+        List<ITunesResult> results = searchAlbumsInDb(artistId)
+            .map(json -> readValue(json.data(), new TypeReference<List<ITunesResult>>() {
+            }))
+            .orElseGet(() -> lookupTop5AlbumsAndCache(artistId));
+
+        return albums(results);
+    }
+
+    private List<ITunesResult> lookupTop5AlbumsAndCache(long artistId) {
         ITunesResponse response = iTunesApi.top5Albums(artistId);
-        return Album.albums(response.results);
+
+        db.transaction(tx ->
+            tx.dsl()
+                .insertInto(ITunesArtistTop5Albums._ITUNES_ARTIST_TOP5_ALBUMS)
+                .set(ITunesArtistTop5Albums.ARTIST_ID, artistId)
+                .set(ITunesArtistTop5Albums.UPDATED_ON, Instant.now())
+                .set(ITunesArtistTop5Albums.ITUNES_TOP_5_ALBUMS, JSONB.valueOf(writeValue(response.results)))
+                .onConflict(ITunesArtistTop5Albums.ARTIST_ID)
+                .doUpdate()
+                .set(ITunesArtistTop5Albums.ITUNES_TOP_5_ALBUMS, JSONB.valueOf(writeValue(response.results)))
+                .execute()
+        );
+
+        return response.results;
+    }
+
+    private Optional<JSONB> searchAlbumsInDb(long artistId) {
+        return db.select(ITunesArtistTop5Albums.ITUNES_TOP_5_ALBUMS)
+            .from(ITunesArtistTop5Albums._ITUNES_ARTIST_TOP5_ALBUMS)
+            .where(
+                ITunesArtistTop5Albums.ARTIST_ID.eq(artistId),
+                // 1 day cache
+                ITunesArtistTop5Albums.UPDATED_ON.gt(Instant.now().minus(of(1, DAYS)))
+            )
+            .fetchOptionalInto(JSONB.class);
     }
 
     private static class ArtistsTable {
@@ -109,5 +143,12 @@ class Artists {
         public final static Field<String> TERM = DSL.field("term", String.class);
         public final static Field<Instant> UPDATED_ON = DSL.field("updated_on", Instant.class);
         public final static Field<JSONB> ARTISTS = DSL.field("itunes_artists", JSONB.class);
+    }
+
+    private static class ITunesArtistTop5Albums {
+        public final static Table<Record> _ITUNES_ARTIST_TOP5_ALBUMS = DSL.table("itunes_artist_top5_albums");
+        public final static Field<Long> ARTIST_ID = DSL.field("artist_id", Long.class);
+        public final static Field<Instant> UPDATED_ON = DSL.field("updated_on", Instant.class);
+        public final static Field<JSONB> ITUNES_TOP_5_ALBUMS = DSL.field("itunes_top_5_albums", JSONB.class);
     }
 }

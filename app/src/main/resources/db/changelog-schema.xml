@@ -30,4 +30,18 @@
         </createTable>
     </changeSet>
 
+    <changeSet id="3" author="mdomasevicius@gmail.com">
+        <createTable tableName="itunes_artist_top5_albums">
+            <column name="artist_id" type="bigint">
+                <constraints nullable="false" unique="true" primaryKey="true"/>
+            </column>
+            <column name="updated_on" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="itunes_top_5_albums" type="jsonb">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>
