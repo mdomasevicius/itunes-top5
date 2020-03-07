@@ -1,5 +1,6 @@
 package mdomasevicius.itunestop5.artists
 
+import mdomasevicius.itunestop5.componenttests.DB
 import mdomasevicius.itunestop5.componenttests.ITunesApi
 import spock.lang.Shared
 import spock.lang.Specification
@@ -14,10 +15,17 @@ class ArtistsSpec extends Specification {
     @Shared
     def user = newUser()
 
+    def setupSpec() {
+        DB.clear()
+    }
+
     def 'search for artists'() {
         given:
             def iTunesArtists = iTunesApi.searchArtistsByTerm('abba').body.results
         expect:
+            !DB.isArtistTermSearchCached('abba')
+            !DB.isArtistsSaved(iTunesArtists*.artistId as Set)
+
             with(user.searchArtists('abba')) { response ->
                 response.status == 200
                 response.body
@@ -30,6 +38,9 @@ class ArtistsSpec extends Specification {
                     name
                 }
             }
+
+            DB.isArtistsSaved(iTunesArtists*.artistId as Set)
+            DB.isArtistTermSearchCached('abba')
     }
 
     def 'save artists to favourites'() {
@@ -55,6 +66,7 @@ class ArtistsSpec extends Specification {
             def artistId = findArtists('beach boys').first().id as long
             def top5artistAlbums = iTunesApi.top5albums(artistId).body.results.findAll { it.wrapperType == 'collection' }
         expect:
+            !DB.isTop5ArtistAlbumsCached(artistId)
 
             with(user.listTop5Albums(artistId)) { response ->
                 response.status == 200
@@ -75,6 +87,8 @@ class ArtistsSpec extends Specification {
                     it.genre
                 }
             }
+
+            DB.isTop5ArtistAlbumsCached(artistId)
     }
 
     Object findArtists(String term) {
