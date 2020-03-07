@@ -47,7 +47,7 @@ class ArtistsSpec extends Specification {
         given:
             def artists = findArtists('scooter')
         expect:
-            with(user.saveArtistToFavourites([ids: artists*.id])) { response ->
+            with(user.saveArtistToFavourites([artistIds: artists*.id])) { response ->
                 response.status == 204
             }
 

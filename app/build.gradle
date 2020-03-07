@@ -16,6 +16,7 @@ repositories {
 dependencies {
     def springBootVersion = '2.2.5.RELEASE'
     def okHttpVersion = '4.4.0'
+    def swaggerVersion = '2.9.2'
 
     implementation(
         "org.springframework.boot:spring-boot-starter-web:$springBootVersion",
@@ -29,5 +30,8 @@ dependencies {
 
         "com.squareup.okhttp3:okhttp:$okHttpVersion",
         "com.squareup.okhttp3:logging-interceptor:$okHttpVersion",
+
+        "io.springfox:springfox-swagger2:$swaggerVersion",
+        "io.springfox:springfox-swagger-ui:$swaggerVersion",
     )
 }

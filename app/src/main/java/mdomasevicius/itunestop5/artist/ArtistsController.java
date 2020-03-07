@@ -35,13 +35,13 @@ class ArtistsController {
         @RequestHeader("User-Id") Long userId,
         @Valid @RequestBody FavourArtistRequest request
     ) {
-        artists.saveToFavourites(userId, request.ids);
+        artists.saveToFavourites(userId, request.artistIds);
         return noContent().build();
     }
 
     static class FavourArtistRequest {
         @NotEmpty
-        public Set<Long> ids;
+        public Set<Long> artistIds;
     }
 
     // General consensus is unique resource per controller, but since this is
