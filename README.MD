@@ -18,6 +18,8 @@ App that can search for artists by term via iTunes API, add artists to favourite
 
 `$ docker-compose up dev` - will start app dependencies (in this case only DB) so you can run the application from your IDE of choice if you wish. Executing tests from IDE requires a running application
 
+Swagger documentation can be reached via: [http://localhost:7001/swagger-ui.html](http://localhost:7001/swagger-ui.html)
+
 You can also checkout travis build.
 
 ## Library choices and reasoning
@@ -38,6 +40,7 @@ This method of testing has 2 major benefits:
 
 ## Acknowledgement
 
-- I chose not to obsess over every aspect of optimizing querying iTunes API
+- I chose not to obsess over every aspect of optimizing querying iTunes API, although I have more ideas on how to improve its usage.
 - Tests might become unstable during period of an hour since you can hit rate limit
 - No fall-back implemented for when iTunes API rate limit is reached
+- Public fields over setters/getters. Many java developers find this uncanny but when you look into it every major framework and library supports this approach and since java is on its own a very verbose language shaving every bit of noise in code helps maintainability down the line. 
