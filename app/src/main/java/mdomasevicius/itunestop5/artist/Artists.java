@@ -1,7 +1,7 @@
 package mdomasevicius.itunestop5.artist;
 
 import mdomasevicius.itunestop5.itunes.ITunesApi;
-import mdomasevicius.itunestop5.itunes.ITunesArtistSearchResponse;
+import mdomasevicius.itunestop5.itunes.ITunesResponse;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.Record;
@@ -28,7 +28,7 @@ class Artists {
     }
 
     public List<Artist> search(String term) {
-        ITunesArtistSearchResponse response = iTunesApi.searchAllArtists(term);
+        ITunesResponse response = iTunesApi.searchAllArtists(term);
         return artists(response.results);
     }
 
@@ -51,7 +51,7 @@ class Artists {
             .where(ArtistsTable.USER_ID.eq(userId))
             .fetchInto(Long.class);
 
-        ITunesArtistSearchResponse response = iTunesApi.lookupArtists(new HashSet<>(artistIds));
+        ITunesResponse response = iTunesApi.lookupArtists(new HashSet<>(artistIds));
         return artists(response.results);
     }
 

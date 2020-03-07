@@ -23,19 +23,19 @@ public class ITunesApi {
         this.httpClient = httpClient;
     }
 
-    public ITunesArtistSearchResponse searchAllArtists(String term) {
+    public ITunesResponse searchAllArtists(String term) {
         try {
             var body = executeCall(iTunesSearchRequest(term)).body();
-            return JSON.MAPPER.readValue(body.bytes(), ITunesArtistSearchResponse.class);
+            return JSON.MAPPER.readValue(body.bytes(), ITunesResponse.class);
         } catch (IOException ex) {
             throw new RuntimeException(ex); // nothing to do
         }
     }
 
-    public ITunesArtistSearchResponse lookupArtists(Set<Long> artistIds) {
+    public ITunesResponse lookupArtists(Set<Long> artistIds) {
         try {
             var response = executeCall(iTunesLookupRequest(new HashSet<>(artistIds)));
-            return JSON.MAPPER.readValue(response.body().bytes(), ITunesArtistSearchResponse.class);
+            return JSON.MAPPER.readValue(response.body().bytes(), ITunesResponse.class);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         }
