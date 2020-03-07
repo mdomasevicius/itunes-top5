@@ -8,3 +8,7 @@ spring:
     password: itunes_pass
   liquibase:
     change-log: classpath:db/changelog-schema.xml
+
+logging:
+  level:
+    okhttp3: info

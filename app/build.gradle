@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     def springBootVersion = '2.2.5.RELEASE'
+    def okHttpVersion = '4.4.0'
 
     implementation(
         "org.springframework.boot:spring-boot-starter-web:$springBootVersion",
@@ -26,6 +27,7 @@ dependencies {
         'org.jooq:jooq:3.13.1',
         "org.springframework.boot:spring-boot-starter-jooq:$springBootVersion",
 
-        'com.squareup.okhttp3:okhttp:4.4.0',
+        "com.squareup.okhttp3:okhttp:$okHttpVersion",
+        "com.squareup.okhttp3:logging-interceptor:$okHttpVersion",
     )
 }
