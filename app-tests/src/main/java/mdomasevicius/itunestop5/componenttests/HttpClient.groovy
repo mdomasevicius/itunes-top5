@@ -9,12 +9,13 @@ import static java.util.concurrent.TimeUnit.SECONDS
 
 class HttpClient {
 
-    private static final String uriString = "http://localhost:7001"
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
+    private final String baseUri
     private final Map<String, String> defaultHeaders
     private final OkHttpClient httpClient
 
-    HttpClient(Map<String, String> defaultHeaders = [:]) {
+    HttpClient(String baseUri, Map<String, String> defaultHeaders = [:]) {
+        this.baseUri = baseUri
         this.defaultHeaders = defaultHeaders
         this.httpClient  = new OkHttpClient.Builder()
             .connectTimeout(5, SECONDS)
@@ -49,9 +50,9 @@ class HttpClient {
             .build()
     }
 
-    private static Request.Builder requestBuilder(String path, Map<String, String> queryMap = [:]) {
+    private Request.Builder requestBuilder(String path, Map<String, String> queryMap = [:]) {
         def queryString = queryMap ? "?${queryMap2String(queryMap)}" : ''
-        return new Request.Builder().url("${uriString}${path}${queryString}")
+        return new Request.Builder().url("${baseUri}${path}${queryString}")
     }
 
     private Request.Builder applyDefaultHeaders(Request.Builder requestContinuation) {

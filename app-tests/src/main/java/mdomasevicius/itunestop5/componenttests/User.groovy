@@ -15,7 +15,7 @@ class User {
 
     static User newUser() {
         def userId = current().nextLong(MAX_VALUE)
-        def http = new HttpClient(['User-Id': userId as String])
+        def http = new HttpClient('http://localhost:7001', ['User-Id': userId as String])
         return new User(
             userId: userId,
             artistActions: new ArtistActions(http),
