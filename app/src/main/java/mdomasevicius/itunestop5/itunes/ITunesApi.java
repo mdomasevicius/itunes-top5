@@ -1,7 +1,6 @@
 package mdomasevicius.itunestop5.itunes;
 
 import mdomasevicius.itunestop5.common.Conversions;
-import mdomasevicius.itunestop5.common.ITunesApiNot200Exception;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
