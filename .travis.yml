@@ -5,5 +5,4 @@ services:
 jdk:
   - openjdk11
 script:
-  - chmod +x gradlew
-  - ./gradlew build
+  - ./gradlew clean build
