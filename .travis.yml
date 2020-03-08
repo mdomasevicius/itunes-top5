@@ -4,5 +4,7 @@ services:
   - docker
 jdk:
   - openjdk11
+env:
+  - TERM=dumb
 script:
   - ./gradlew clean build
