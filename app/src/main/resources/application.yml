@@ -12,3 +12,6 @@ spring:
 logging:
   level:
     okhttp3: info
+
+app:
+  itunesapi.url: https://itunes.apple.com

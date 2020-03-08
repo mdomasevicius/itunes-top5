@@ -5,6 +5,7 @@ services:
     build: app/.
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/itunes
+      APP_ITUNESAPI_URL: http://wiremock:8080
     ports:
       - 7001:7001
     mem_limit: 256m
@@ -22,8 +23,18 @@ services:
     volumes:
       - ./initdb:/docker-entrypoint-initdb.d:ro
 
+  wiremock:
+    image: rodolpheche/wiremock:2.26.3-alpine
+    ports:
+      - "7000:8080"
+    environment:
+      verbose: "true"
+    volumes:
+      - ./wiremock:/home/wiremock:ro
+
   dev:
     image: tianon/true
     restart: "no"
     depends_on:
       - db
+      - wiremock

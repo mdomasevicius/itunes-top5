@@ -2,6 +2,7 @@ package mdomasevicius.itunestop5.artists
 
 import mdomasevicius.itunestop5.componenttests.DB
 import mdomasevicius.itunestop5.componenttests.ITunesApi
+import mdomasevicius.itunestop5.componenttests.Wiremock
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -16,11 +17,12 @@ class ArtistsSpec extends Specification {
     def user = newUser()
 
     def setupSpec() {
-        DB.clear()
+        DB.clear() // clear db state for entire spec
     }
 
     def 'search for artists'() {
         given:
+            Wiremock.resetRequestLog()
             def iTunesArtists = iTunesApi.searchArtistsByTerm('abba').body.results
         expect:
             !DB.isArtistTermSearchCached('abba')
@@ -41,11 +43,19 @@ class ArtistsSpec extends Specification {
 
             DB.isArtistsSaved(iTunesArtists*.artistId as Set)
             DB.isArtistTermSearchCached('abba')
+
+        and:
+            user.searchArtists('abba') // another identical request should not call itunes api
+            with(Wiremock.requestLog().body.requests) { loggedRequests ->
+                loggedRequests.size() == 1
+                loggedRequests.first().request.queryParams.term.values == ['abba']
+            }
     }
 
     def 'save artists to favourites'() {
         given:
             def artists = findArtists('scooter')
+            Wiremock.resetRequestLog()
         expect:
             with(user.saveArtistToFavourites([artistIds: artists*.id])) { response ->
                 response.status == 204
@@ -59,12 +69,16 @@ class ArtistsSpec extends Specification {
 
         and:
             !newUser().listFavouriteArtists().body
+
+        and:
+            !Wiremock.requestLog().body.requests // listing artists should pull artist info from DB
     }
 
     def 'list top 5 artist albums'() {
         given:
             def artistId = findArtists('beach boys').first().id as long
             def top5artistAlbums = iTunesApi.top5albums(artistId).body.results.findAll { it.wrapperType == 'collection' }
+            Wiremock.resetRequestLog()
         expect:
             !DB.isTop5ArtistAlbumsCached(artistId)
 
@@ -89,6 +103,13 @@ class ArtistsSpec extends Specification {
             }
 
             DB.isTop5ArtistAlbumsCached(artistId)
+
+        and:
+            user.listTop5Albums(artistId)
+            with(Wiremock.requestLog().body.requests) { loggedRequests ->
+                loggedRequests.size() == 1
+                loggedRequests.first().request.queryParams.id.values == [artistId as String]
+            }
     }
 
     Object findArtists(String term) {

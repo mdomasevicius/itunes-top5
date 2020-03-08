@@ -4,6 +4,7 @@ import mdomasevicius.itunestop5.common.Conversions;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -14,10 +15,14 @@ import static java.util.stream.Collectors.joining;
 @Component
 public class ITunesApi {
 
-    private final static String BASE_URL = "https://itunes.apple.com";
+    private final String apiUrl;
     private final OkHttpClient httpClient;
 
-    public ITunesApi(OkHttpClient httpClient) {
+    public ITunesApi(
+        @Value("${app.itunesapi.url}") String apiUrl,
+        OkHttpClient httpClient
+    ) {
+        this.apiUrl = apiUrl;
         this.httpClient = httpClient;
     }
 
@@ -40,9 +45,9 @@ public class ITunesApi {
         }
     }
 
-    private static Request iTunesSearchRequest(String term) {
+    private Request iTunesSearchRequest(String term) {
         return new Request.Builder()
-            .url(BASE_URL + "/search?entity=allArtist&term=" + term)
+            .url(this.apiUrl + "/search?entity=allArtist&term=" + term)
             .build();
     }
 
@@ -63,9 +68,9 @@ public class ITunesApi {
         }
     }
 
-    private static Request iTunesLookupRequest(String queryString) {
+    private Request iTunesLookupRequest(String queryString) {
         return new Request.Builder()
-            .url(BASE_URL + "/lookup" + queryString)
+            .url(this.apiUrl + "/lookup" + queryString)
             .build();
     }
 }

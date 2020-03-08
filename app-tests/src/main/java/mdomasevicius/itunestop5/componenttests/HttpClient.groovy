@@ -38,6 +38,11 @@ class HttpClient {
         return new FluentResponse(httpResponse.code(), body)
     }
 
+    FluentResponse delete(String path) {
+        def httpResponse = httpClient.newCall(deleteRequest(path)).execute()
+        return new FluentResponse(httpResponse.code(), null)
+    }
+
     private Request getRequest(String path, Map<String, String> query = [:]) {
         return applyDefaultHeaders(requestBuilder(path, query))
             .get()
@@ -47,6 +52,12 @@ class HttpClient {
     private Request postRequest(String path, Map payload) {
         return applyDefaultHeaders(requestBuilder(path))
             .post(RequestBody.create(toJson(payload), JSON))
+            .build()
+    }
+
+    private Request deleteRequest(String path) {
+        return applyDefaultHeaders(requestBuilder(path))
+            .delete()
             .build()
     }
 
