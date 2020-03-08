@@ -17,11 +17,9 @@ services:
     ports:
       - "5401:5432"
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: itunes_user
+      POSTGRES_PASSWORD: itunes_pass
       POSTGRES_DB: itunes
-    volumes:
-      - ./initdb:/docker-entrypoint-initdb.d:ro
 
   wiremock:
     image: rodolpheche/wiremock:2.26.3-alpine
