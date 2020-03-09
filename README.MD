@@ -12,7 +12,7 @@ App that can search for artists by term via iTunes API, add artists to favourite
 
 ## Quickstart
 
-`$ .gradlew clean build` - builds application and runs tests (tests will spin up docker containers of DB and app on ports 7001 and 5401 respectively)  
+`$ .gradlew clean build` - builds application and runs tests (tests will spin up docker containers of DB, Wiremock and app on ports 7001 and 5401 respectively)  
 
 `$ docker-compose up` - will start DB and app
 
@@ -26,11 +26,11 @@ You can also checkout travis build!
 
 - `spring-boot-starter-web` as per recommendation and because job application emphasizes `spring`.
 - `liquibase` for DB migration. Perhaps this is overkill however it was the least time consuming and is favoured by most JAVA developers.
-- `okhttp3` as http client. I am aware of JAVA 11 http client and was excited to go with it until I ran into bugs. Lacking experience in dealing with it I switched to `okhttp3` as I was more familiar with it.
+- `okhttp3` as http client. I am aware of JAVA 11 http client and was excited to go with it until I ran into bugs. Lacking in experience with java http client I switched to `okhttp3` as I was more familiar with it.
 - `jOOQ` as a query mapping layer. It's more practical than `java.sql.Connection` API and less magical than `Hibernate` plus it's free with open source DB projects.
 - `swagger` some documentation just to cover more basis.
 
-- `groovy` & `spock` for testing. Personally I like `groovy` map shorthand literals that removes much noise from constructing JSON requests, also groovy removes a lot of noise and loose typing makes tests cleaners. And spock gives more specification look n feel to tests (specs/features).
+- `groovy` & `spock` for testing. Personally I like `groovy` map shorthand literals that removes much noise from constructing JSON requests. And spock gives more specification look n feel to tests (specs/features).
 
 ## Component testing
 
